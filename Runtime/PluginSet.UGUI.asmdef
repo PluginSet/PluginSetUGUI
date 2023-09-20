@@ -1,0 +1,17 @@
+{
+    "name": "PluginSet.UGUI",
+    "rootNamespace": "",
+    "references": [
+        "PluginSet.Core",
+        "UnityUIExtensions"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

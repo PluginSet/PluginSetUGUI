@@ -1,0 +1,18 @@
+{
+  "name": "com.pluginset.ugui",
+  "displayName": "PluginSet Unity GUI Framework",
+  "version": "0.0.1",
+  "unity": "2018.4",
+  "description": "PluginSet Unity GUI Framework.",
+  "keywords": [
+    "pluginset",
+    "ugui"
+  ],
+  "dependencies": {
+    "com.pluginset.core": "1.0.0"
+  },
+  "author": {
+    "name": "LyneXiao",
+    "email": "lixonxs@icloud.com"
+  }
+}
