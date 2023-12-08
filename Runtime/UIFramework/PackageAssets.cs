@@ -237,12 +237,16 @@ namespace PluginSet.UGUI
             }
 
             var runtimeAssetsData = new List<BranchAssets>();
-            foreach (var (assetName, dict) in assetsMap)
+            foreach (var kv in assetsMap)
             {
+                var assetName = kv.Key;
+                var dict = kv.Value;
                 var assets = new List<BranchAsset>();
                 var containsMainBranch = false;
-                foreach (var (branch, asset) in dict)
+                foreach (var branchKv in dict)
                 {
+                    var branch = branchKv.Key;
+                    var asset = branchKv.Value;
                     if (runtimeBranches.Contains(branch))
                     {
                         assets.Add(new BranchAsset
@@ -301,7 +305,6 @@ namespace PluginSet.UGUI
             includeAssets = includedReferences.ToArray();
             
             OnValidate();
-            UnityEditor.AssetDatabase.Refresh();
         }
 #endif
     }

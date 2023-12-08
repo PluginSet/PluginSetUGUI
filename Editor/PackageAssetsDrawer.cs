@@ -41,15 +41,29 @@ namespace PluginSet.UGUI.Editor
             obj.ApplyModifiedProperties();
             EditorGUI.EndChangeCheck();
 
+            var dirty = false;
             if (GUILayout.Button("Refresh"))
             {
                 var packageAsset = (PackageAssets<T>) target;
                 packageAsset.Refresh();
+                dirty = true;
             }
+
+            dirty = CheckDragEvent() || dirty;
             
+            if (dirty)
+            {
+                UnityEditor.EditorUtility.SetDirty(target);
+                UnityEditor.AssetDatabase.SaveAssets();
+                UnityEditor.AssetDatabase.Refresh();
+            }
+        }
+
+        private bool CheckDragEvent()
+        {
             var type = Event.current.type;
             if (type != EventType.DragUpdated && type != EventType.DragPerform)
-                return;
+                return false;
 
             var position = Event.current.mousePosition;
             var dropIn = includeAssetsRect.Contains(position);
@@ -57,15 +71,16 @@ namespace PluginSet.UGUI.Editor
             DragAndDrop.visualMode = dropIn ? DragAndDropVisualMode.Copy : DragAndDropVisualMode.Generic;
 
             if (type != EventType.DragPerform || !dropIn)
-                return;
+                return false;
 
             if (DragAndDrop.objectReferences != null && DragAndDrop.objectReferences.Length > 0)
             {
                 var packageAsset = (PackageAssets<T>) target;
                 packageAsset.AddAssets(DragAndDrop.objectReferences.Select(o => o as T));
-                EditorUtility.SetDirty(packageAsset);
-                AssetDatabase.SaveAssets();
+                return true;
             }
+
+            return false;
         }
     }
 

@@ -4,7 +4,7 @@ namespace PluginSet.UGUI
 {
     public abstract class UIToastShowRule
     {
-        public static readonly UIToastShowRule DefaultRule = new UIToastShowRuleDefault(3f, true, true);
+        public static readonly UIToastShowRule DefaultRule = new UIToastShowRuleDefault(2f, true, true);
         
         private static readonly Dictionary<string, UIToastShowRule> _rules = new Dictionary<string, UIToastShowRule>();
         
@@ -26,6 +26,7 @@ namespace PluginSet.UGUI
 
         public abstract void OnToastAdded(UIToast toast);
 
+        public abstract void OnToastIn(UIToast toast);
         public abstract void OnToastOut(UIToast toast);
 
         public abstract void OnToastRemove(UIToast toast);

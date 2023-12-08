@@ -13,84 +13,132 @@ namespace PluginSet.UGUI
         // 当上个Toast在播放退出动画时，就可以播放下个Toast
         public bool EnableShowWhenLastOut;
             
-        protected UIToast _currentToast;
-        protected List<UIToast> _queue;
+        protected readonly List<UIToast> ShowedToasts = new List<UIToast>();
+        protected readonly List<UIToast> ShowingToasts = new List<UIToast>();
+        protected readonly List<UIToast> ToastQueue = new List<UIToast>();
+
+        private bool _isCheckShowNext;
 
         public UIToastShowRuleDefault(float defaultStaySeconds, bool outImmediatelyWhenNew, bool enableShowWhenLastOut)
         {
             DefaultStaySeconds = defaultStaySeconds;
             OutImmediatelyWhenNew = outImmediatelyWhenNew;
             EnableShowWhenLastOut = enableShowWhenLastOut;
-            
-            _currentToast = null;
-            _queue = new List<UIToast>();
-        }
-        
-        
-        protected void ShowNext(object _)
-        {
-//            if (_currentToast != null && !_currentToast.isDisposed)
-//            {
-//                if (OutImmediatelyWhenNew && _queue.Count > 0)
-//                    _currentToast.OutImmediately();
-//                return;
-//            }
-//
-//            _currentToast = null;
-//            while (_queue.Count > 0)
-//            {
-//                var toast = _queue[0];
-//                _queue.RemoveAt(0);
-//                if (toast == null || toast.isDisposed) continue;
-//
-//                _currentToast = toast;
-//                toast.Show(DefaultStaySeconds);
-//                if (OutImmediatelyWhenNew && _queue.Count > 0)
-//                    toast.OutImmediately();
-//                return;
-//            }
         }
 
-        protected virtual void AddToSequence(UIToast toast)
+        protected void ShowNext()
         {
-//            var order = toast.sortingOrder;
-//            if (order > 0)
-//            {
-//                for (int i = 0; i < _queue.Count; i++)
-//                {
-//                    if (_queue[i].sortingOrder > order)
-//                    {
-//                        _queue.Insert(i, toast);
-//                        return;
-//                    }
-//                }
-//            }
+            if (_isCheckShowNext)
+                return;
+            _isCheckShowNext = true;
+            ShowNextInternal();
+            _isCheckShowNext = false;
+        }
+        
+        protected void ShowNextInternal()
+        {
+            if (ToastQueue.Count <= 0)
+                return;
+
+            if (!EnableShowWhenLastOut)
+            {
+                for (int i = ShowedToasts.Count - 1; i >= 0; i--)
+                {
+                    var toast = ShowedToasts[i];
+                    if (toast == null)
+                    {
+                        ShowedToasts.RemoveAt(i);
+                        continue;
+                    }
+
+                    return;
+                }
+                
+                for (int i = ShowingToasts.Count - 1; i >= 0; i--)
+                {
+                    var toast = ShowingToasts[i];
+                    if (toast == null)
+                    {
+                        ShowingToasts.RemoveAt(i);
+                        continue;
+                    }
+
+                    return;
+                }
+            }
+
+            if (OutImmediatelyWhenNew)
+            {
+                for (int i = ShowingToasts.Count - 1; i >= 0; i--)
+                {
+                    var toast = ShowingToasts[i];
+                    if (toast == null)
+                    {
+                        ShowingToasts.RemoveAt(i);
+                        continue;
+                    }
+
+                    toast.OutImmediately();
+                }
+            }
             
-            _queue.Add(toast);
+            if (ShowingToasts.Count > 0)
+                return;
+
+            for (int i = ShowedToasts.Count - 1; i >= 0; i--)
+            {
+                var toast = ShowedToasts[i];
+                if (toast == null)
+                {
+                    ShowedToasts.RemoveAt(i);
+                    continue;
+                }
+                
+                toast.OutImmediately();
+            }
+            
+            while (ToastQueue.Count > 0)
+            {
+                var toast = ToastQueue[0];
+                ToastQueue.RemoveAt(0);
+                if (toast == null) continue;
+            
+                ShowingToasts.Add(toast);
+                _isCheckShowNext = false;
+                
+                toast.Show(DefaultStaySeconds);
+                break;
+            }
         }
 
         public override void OnToastAdded(UIToast toast)
         {
-//            AddToSequence(toast);
-//            Timers.inst.CallLater(ShowNext);
+            ToastQueue.Add(toast);
+            ShowNext();
+        }
+
+        public override void OnToastIn(UIToast toast)
+        {
+            ShowingToasts.Remove(toast);
+            if (!ShowedToasts.Contains(toast))
+                ShowedToasts.Add(toast);
+            ShowNext();
         }
 
         public override void OnToastOut(UIToast toast)
         {
-//            if (EnableShowWhenLastOut)
-//            {
-//                _currentToast = null;
-//                Timers.inst.CallLater(ShowNext);
-//            }
+            ShowingToasts.Remove(toast);
+            if (!ShowedToasts.Contains(toast))
+                ShowedToasts.Add(toast);
+            ShowNext();
         }
 
         public override void OnToastRemove(UIToast toast)
         {
-//            if (_currentToast == toast)
-//                _currentToast = null;
-//
-//            if (!_queue.Remove(toast))
-//                Timers.inst.CallLater(ShowNext);
+            ShowedToasts.Remove(toast);
+            ShowingToasts.Remove(toast);
+            ToastQueue.Remove(toast);
+            ShowNext();
         }
     }
 }

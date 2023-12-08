@@ -66,6 +66,11 @@ namespace PluginSet.UGUI
             
         }
 
+        public virtual void SetData()
+        {
+            
+        }
+
         public virtual void SetData(IProxy data)
         {
         }

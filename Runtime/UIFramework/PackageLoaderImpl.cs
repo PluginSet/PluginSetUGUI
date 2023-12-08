@@ -11,7 +11,7 @@ namespace PluginSet.UGUI
 
         protected virtual string GetBundleName(string packageName)
         {
-            return packageName;
+            return $"{packageName}";
         }
 
         protected virtual string GetBundleName(string packageName, string branch)
@@ -27,10 +27,15 @@ namespace PluginSet.UGUI
                 return branchBundle;
             
             var bundleName = GetBundleName(packageName);
-            if (manager.ExistsBundle(bundleName))
+            if (!string.Equals(branchBundle, bundleName) && manager.ExistsBundle(bundleName))
                 return bundleName;
 
             return null;
+        }
+
+        public string GetPackageBundleName(string packageName)
+        {
+            return GetBranchBundleName(packageName, UIPackage.branch);
         }
 
         public AsyncOperationHandle PreparePackage(string packageName)
@@ -59,13 +64,6 @@ namespace PluginSet.UGUI
 
         public UIPackage LoadPackage(string packageName)
         {
-            var package = UIPackage.GetByName(packageName);
-            if (package != null)
-            {
-                package.Retain();
-                return package;
-            }
-
             var bundleName = GetBranchBundleName(packageName, UIPackage.branch);
             if (string.IsNullOrEmpty(bundleName))
                 throw new Exception($"Cannot find bundle for package {packageName}");
@@ -112,9 +110,6 @@ namespace PluginSet.UGUI
 
         public void ReleasePackage(UIPackage package)
         {
-            if (!package.Release())
-                return;
-
             var asset = package.Assets;
             package.Assets = null;
             ResourcesManager.Instance.ReleaseAsset(asset);

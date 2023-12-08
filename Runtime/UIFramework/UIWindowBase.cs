@@ -8,12 +8,12 @@ using Object = UnityEngine.Object;
 namespace PluginSet.UGUI
 {
     [RequireComponent(typeof(RectTransform))]
-    public class UIWindowBase: BranchAssetAdaptor
+    public class UIWindowBase: BranchAssetAdaptor, IUIEntity
     {
         public Action<Action> EnterAction { get; set; }
         public Action<Action> ExitAction { get; set; }
 
-        public int Tag;
+        public int Tag { get; set; }
 
         public virtual bool IsModal { get; }
 
@@ -168,18 +168,6 @@ namespace PluginSet.UGUI
             obj.SetActive(true);
             Panel = panel;
 
-            if (!this.IsModal)
-            {
-                var scaler = panel.GetComponent<UIWidgetScaler>();
-                if (scaler == null)
-                {
-                    scaler = panel.gameObject.AddComponent<UIWidgetScaler>();
-                    scaler.mode = UIWidgetScaler.WidgetScalerMode.ShowAll;
-                }
-
-                scaler.targetTransform = _transform;
-            }
-            
             OnInit();
             _inited = true;
         }

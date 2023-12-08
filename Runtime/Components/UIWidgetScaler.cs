@@ -61,7 +61,7 @@ namespace PluginSet.UGUI
             if (_selfRectTransform == null)
                 _selfRectTransform = GetComponent<RectTransform>();
             
-            if (targetTransform == null)
+            if (targetTransform == null && transform.parent != null)
                 targetTransform = transform.parent.GetComponent<RectTransform>();
         }
         

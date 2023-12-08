@@ -7,12 +7,27 @@ namespace PluginSet.UGUI
     [RequireComponent(typeof(Canvas))]
     [RequireComponent(typeof(CanvasScaler))]
     [RequireComponent(typeof(GraphicRaycaster))]
-    [RequireComponent(typeof(SafeAreaCalculator))]
+    // [RequireComponent(typeof(SafeAreaCalculator))]
     public class UIRoot: MonoBehaviour
     {
         public static UIRoot Instance { get; private set; }
         
         public RectTransform RectTransform { get; private set; }
+
+        private Canvas _canvas;
+
+        public Canvas Canvas
+        {
+            get
+            {
+                if (_canvas == null)
+                    _canvas = GetComponent<Canvas>();
+
+                return _canvas;
+            }
+        }
+        
+        public Camera UICamera => Canvas.worldCamera;
 
         internal List<UILayer> Layers;
         
@@ -53,6 +68,10 @@ namespace PluginSet.UGUI
                 var rect = calculator.GetSafeArea();
                 CalculateSafeArea(rect.x, rect.y, rect.width, rect.height);
             }
+            else
+            {
+                Debug.LogError("UIRoot: SafeAreaCalculator is null");
+            }
         }
 
         private void OnDestroy()
@@ -64,11 +83,8 @@ namespace PluginSet.UGUI
         private void CalculateSafeArea(float x, float y, float w, float h)
         {
             var canvasScaler = GetComponent<CanvasScaler>();
-            if (canvasScaler.uiScaleMode != CanvasScaler.ScaleMode.ScaleWithScreenSize)
-            {
-                Debug.LogError("UIRoot: CanvasScaler.uiScaleMode must be ScaleWithScreenSize");
+            if (canvasScaler.uiScaleMode != CanvasScaler.ScaleMode.ConstantPixelSize)
                 return;
-            }
 
             var factor = canvasScaler.scaleFactor;
             var dWidth = canvasScaler.referenceResolution.x;

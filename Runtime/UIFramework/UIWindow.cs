@@ -98,6 +98,13 @@ namespace PluginSet.UGUI
         {
             if (args != null && args.Length == 1 && args[0] is T data)
                 SetData(data);
+            else
+                SetData();
+        }
+        
+        protected virtual void SetData()
+        {
+            
         }
 
         protected virtual void SetData(T data)

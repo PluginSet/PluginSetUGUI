@@ -4,7 +4,7 @@ namespace PluginSet.UGUI
 {
     public class PanelWindowBase: UIWindow<IProxy>
     {
-        protected virtual PanelBehavior PanelBehavior { get; set; }
+        public virtual PanelBehavior PanelBehavior { get; protected set; }
         protected override bool DestroyOnHide => true;
         
         protected override void OnInit()
@@ -21,6 +21,12 @@ namespace PluginSet.UGUI
             }
         }
 
+        protected override void SetData()
+        {
+            if (PanelBehavior != null)
+                PanelBehavior.SetData();
+        }
+
         protected override void SetData(IProxy data)
         {
             if (PanelBehavior != null)
@@ -31,7 +37,7 @@ namespace PluginSet.UGUI
         {
             base.BeforeShow();
             if (PanelBehavior != null)
-                PanelBehavior.BeforeHide();
+                PanelBehavior.BeforeShow();
         }
 
         protected override void OnShown()
@@ -63,6 +69,18 @@ namespace PluginSet.UGUI
                 gameObject.SetActive(false);
         }
     }
+
+    public abstract class PanelWindowBase<T> : PanelWindowBase where T : PanelBehavior
+    {
+        public T Behavior { get; private set; }
+
+        public override PanelBehavior PanelBehavior
+        {
+            get => Behavior;
+            
+            protected set => Behavior = (T)value;
+        }
+    }
     
     public abstract class PanelWindow<T>: PanelWindowBase where T : IProxy
     {
@@ -90,7 +108,7 @@ namespace PluginSet.UGUI
         protected override bool DestroyOnHide => destroyOnHide;
         public override bool IsModal => isModal;
 
-        protected override PanelBehavior PanelBehavior { get => panelBehavior; set => panelBehavior = value; }
+        public override PanelBehavior PanelBehavior { get => panelBehavior; protected set => panelBehavior = value; }
 
         private bool _isFirstAwake = true;
 

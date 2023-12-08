@@ -136,6 +136,11 @@ namespace PluginSet.UGUI
             Assets = assets;
             _reference = 1;
         }
+        
+        public bool IsNewReference()
+        {
+            return _reference == 1;
+        }
 
         public void Retain()
         {

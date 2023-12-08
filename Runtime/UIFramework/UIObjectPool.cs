@@ -18,7 +18,7 @@ namespace PluginSet.UGUI
         public ResObjectPool(PackageItem item, Transform panel, int maxSize = 100) : base(maxSize)
         {
             PackageItem = item;
-            _prefab = (GameObject)item.asset;
+            _prefab = Object.Instantiate((GameObject)item.asset, panel, false);
             _prefab.SetActive(false);
             _transform = panel;
         }
@@ -132,7 +132,7 @@ namespace PluginSet.UGUI
                 Object.Destroy(obj);
         }
 
-        public void Clear()
+        private void Clear()
         {
             foreach (var pool in _assetPools.Values)
             {

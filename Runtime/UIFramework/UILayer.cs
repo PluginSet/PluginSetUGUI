@@ -38,35 +38,36 @@ namespace PluginSet.UGUI
             var obj = new GameObject(name);
             obj.transform.SetParent(parent, false);
             var layer = obj.AddComponent<UILayer>();
-            layer.Canvas = obj.AddComponent<Canvas>();
+            layer.canvas = obj.AddComponent<Canvas>();
             obj.AddComponent<GraphicRaycaster>();
             layer.InitCanvas(sortingOrder);
             return layer;
         }
 
-        internal Canvas Canvas { get; private set; }
+        [SerializeField]
+        private Canvas canvas;
         public RectTransform RectTransform { get; private set; }
 
         private RectTransform _modalLayer;
 
         private void Awake()
         {
-            if (Canvas == null)
-                Canvas = GetComponent<Canvas>();
+            if (canvas == null)
+                canvas = GetComponent<Canvas>();
             if (RectTransform == null)
                 RectTransform = GetComponent<RectTransform>();
         }
 
         private void InitCanvas(int sortingOrder)
         {
-            Canvas.overrideSorting = true;
-            Canvas.sortingOrder = sortingOrder;
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = sortingOrder;
             RectTransform = GetComponent<RectTransform>();
         }
         
         public int CompareTo(UILayer other)
         {
-            return other.Canvas.sortingOrder.CompareTo(Canvas.sortingOrder);
+            return other.canvas.sortingOrder.CompareTo(canvas.sortingOrder);
         }
 
         internal bool AdjustModalLayer()
@@ -100,7 +101,7 @@ namespace PluginSet.UGUI
             if (_modalLayer == null)
             {
                 _modalLayer = CreateModalLayer();
-                _modalLayer.SetParent(RectTransform);
+                _modalLayer.SetParent(RectTransform, false);
                 _modalLayer.gameObject.AddComponent<MakeFullScreen>();
                 siblingIndex++;
             }
@@ -151,5 +152,17 @@ namespace PluginSet.UGUI
 
             return rectTransform;
         }
+
+#if UNITY_EDITOR
+        private void OnEnable()
+        {
+            OnValidate();
+        }
+
+        private void OnValidate()
+        {
+            canvas = GetComponent<Canvas>();
+        }
+#endif
     }
 }

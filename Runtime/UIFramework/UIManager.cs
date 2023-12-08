@@ -21,9 +21,8 @@ namespace PluginSet.UGUI
             public int Tag;
         }
 
-        private static readonly Dictionary<string, WindowInfo> _windowInfos = new Dictionary<string, WindowInfo>();
+        private static readonly Dictionary<string, WindowInfo> WindowInfos = new Dictionary<string, WindowInfo>();
         
-        private static bool _inited = false;
         private static string _defaultToastUrl;
 
         public static void SetDefaultToastUrl(string url)
@@ -44,18 +43,24 @@ namespace PluginSet.UGUI
         
         public static void RegisterWindow(string name, Type type, bool isSingleton = true, int tag = 0)
         {
-            if (_windowInfos.ContainsKey(name))
+            if (WindowInfos.ContainsKey(name))
             {
                 Logger.Warn("Repeated window name {0} with type {1}", name, type.FullName);
                 return;
             }
             
-            _windowInfos.Add(name, new WindowInfo()
+            WindowInfos.Add(name, new WindowInfo()
             {
                 WindowType = type,
                 IsSingleton = isSingleton,
                 Tag = tag,
             });
+        }
+        
+        public static void UnRegisterWindow(string name)
+        {
+            if (WindowInfos.ContainsKey(name))
+                WindowInfos.Remove(name);
         }
 
         public static UIWindow FindWindow(string name)
@@ -74,7 +79,7 @@ namespace PluginSet.UGUI
 
         public static T ShowOn<T>(UILayer layer, string name, params object[] args) where T: UIWindow
         {
-            if (!_windowInfos.TryGetValue(name, out var info))
+            if (!WindowInfos.TryGetValue(name, out var info))
             {
                 Logger.Error("Cannot find window info with name {0}", name);
                 return null;
@@ -83,10 +88,7 @@ namespace PluginSet.UGUI
             T window = null;
             if (info.IsSingleton)
             {
-                var win = UIWindow.GetInstance(name);
-                if (win != null && win is not T)
-                    throw new Exception("Window type is not match");
-                window = win as T;
+                window = UIWindow.GetInstance(name) as T;
             }
 
             if (window == null)
@@ -117,15 +119,15 @@ namespace PluginSet.UGUI
             UIToastShowRule.AddRule(name, new UIToastShowRuleDefault(defaultStaySeconds, outImmediatelyWhenNew, enableShowWhenLastOut));
         }
 
-        public static T ShowToastOn<T>(UILayer layer, string text, string icon = null, string url = null, int tag = 0) where T: UIToast
+        public static void ShowToastOn(UILayer layer, string text, string icon = null, string url = null, int tag = 0)
         {
             if (string.IsNullOrEmpty(url))
                 url = _defaultToastUrl;
             
-            return ShowToastOn<T>(layer, text, icon, url, tag, url);
+            ShowToastOn(layer, text, icon, url, tag, url);
         }
         
-        public static T ShowToastOn<T>(UILayer layer, string text, string icon, string url, int tag, string rule, int sortingOrder = 0) where T: UIToast
+        public static void ShowToastOn(UILayer layer, string text, string icon, string url, int tag, string rule)
         {
             if (string.IsNullOrEmpty(url))
                 url = _defaultToastUrl;
@@ -133,30 +135,21 @@ namespace PluginSet.UGUI
             var item = UIPackage.GetPackageItem(url);
             var toast = UIObjectPool.Instance.Get(item);
             if (toast == null)
-                return null;
+                return;
             
-            var toastComponent = toast.GetComponent<T>();
+            var toastComponent = toast.GetComponent<UIToast>();
             if (toastComponent == null)
             {
                 Logger.Error("Toast component is null");
-                return null;
+                return;
             }
 
             toastComponent.Tag = tag;
-            toastComponent.title = text; 
-            if (!string.IsNullOrEmpty(icon))
-                toastComponent.icon = icon;
-
-            if (sortingOrder != 0)
-            {
-                var sort = toast.GetComponent<SortingGroup>();
-                if (sort == null)
-                    sort = toast.AddComponent<SortingGroup>();
-                sort.sortingOrder = sortingOrder;
-            }
-            toastComponent.SetRule(UIToastShowRule.GetRule(rule));
+            toastComponent.text = text; 
+            toastComponent.icon = icon;
+            
             toast.GetComponent<RectTransform>().SetParent(layer.RectTransform, false);
-            return toastComponent;
+            toastComponent.SetRule(UIToastShowRule.GetRule(rule));
         }
 
         public static void HideAll(UILayer layer)
@@ -204,25 +197,25 @@ namespace PluginSet.UGUI
             CloseAllWin(win => tag.Equals(win.Tag));
         }
 
-        private static void HideAllWinOn(UILayer layer, Func<UIWindow, bool> match)
+        private static void HideAllWinOn(UILayer layer, Func<IUIEntity, bool> match)
         {
-            foreach (var win in layer.GetComponentsInChildren<UIWindow>())
+            foreach (var win in layer.GetComponentsInChildren<IUIEntity>(true))
             {
                 if (match(win))
                     win.Hide();
             }
         }
 
-        private static void CloseAllWinOn(UILayer layer, Func<UIWindow, bool> match)
+        private static void CloseAllWinOn(UILayer layer, Func<IUIEntity, bool> match)
         {
-            foreach (var win in layer.GetComponentsInChildren<UIWindow>())
+            foreach (var win in layer.GetComponentsInChildren<IUIEntity>(true))
             {
                 if (match(win))
                     win.HideImmediately();
             }
         }
 
-        private static void HideAllWin(Func<UIWindow, bool> match)
+        private static void HideAllWin(Func<IUIEntity, bool> match)
         {
             foreach (var layer in UIRoot.Instance.Layers)
             {
@@ -230,7 +223,7 @@ namespace PluginSet.UGUI
             }
         }
         
-        private static void CloseAllWin(Func<UIWindow, bool> match)
+        private static void CloseAllWin(Func<IUIEntity, bool> match)
         {
             foreach (var layer in UIRoot.Instance.Layers)
             {

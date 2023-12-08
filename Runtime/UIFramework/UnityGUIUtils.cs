@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using PluginSet.Core;
-using UnityEngine;
 
 namespace PluginSet.UGUI
 {
@@ -38,6 +37,12 @@ namespace PluginSet.UGUI
             _packageLoader = loader;
         }
 
+        public static string GetBundleName(string package)
+        {
+            CheckPackageLoader();
+            return _packageLoader.GetPackageBundleName(package);
+        }
+
         public static AsyncOperationHandle PreparePackages(params string[] packageNames)
         {
             var count = packageNames.Length;
@@ -61,7 +66,14 @@ namespace PluginSet.UGUI
         public static UIPackage LoadPackage(string packageName)
         {
             CheckPackageLoader();
-            var pkg = _packageLoader.LoadPackage(packageName);
+            var pkg = UIPackage.GetByName(packageName);
+            if (pkg != null)
+            {
+                pkg.Retain();
+                return pkg;
+            }
+            
+            pkg = _packageLoader.LoadPackage(packageName);
             OnPackageLoadedHandle?.Invoke(packageName);
             return pkg;
         }
@@ -79,6 +91,9 @@ namespace PluginSet.UGUI
         public static void ReleasePackage(UIPackage package)
         {
             CheckPackageLoader();
+            if (!package.Release())
+                return;
+            
             OnPackageUnloadHandle?.Invoke(package.name);
             _packageLoader.ReleasePackage(package);
         }
@@ -116,33 +131,6 @@ namespace PluginSet.UGUI
 //                }
 //            }
 //        }
-
-        public static void MakeFullScreen(RectTransform target)
-        {
-//            var parent = target.displayObject.parent;
-//            if (parent == null)
-//                return;
-//
-//            var root = GRoot.inst;
-//            Vector2 leftUp = new Vector2(0, 0);
-//            leftUp = root.LocalToGlobal(leftUp);
-//            leftUp = parent.GlobalToLocal(leftUp);
-//            
-//            Vector2 rightBottom = new Vector2(root.width, root.height);
-//            rightBottom = root.LocalToGlobal(rightBottom);
-//            rightBottom = parent.GlobalToLocal(rightBottom);
-//
-//            var width = rightBottom.x - leftUp.x;
-//            var height = rightBottom.y - leftUp.y;
-//            target.SetSize(width, height);
-//            
-//            if (target.pivotAsAnchor)
-//            {
-//                leftUp.x += width * target.pivotX;
-//                leftUp.y += height * target.pivotY;
-//            }
-//            target.SetXY(leftUp.x, leftUp.y);
-        }
 
         [Conditional("UNITY_EDITOR")]
         private static void CheckPackageLoader()
