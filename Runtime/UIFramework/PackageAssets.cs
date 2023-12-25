@@ -63,6 +63,19 @@ namespace PluginSet.UGUI
             }
         }
         
+        public List<T> GetAllAssets<T>(string branch = MainBranchName) where T : Object
+        {
+            var result = new List<T>();
+            foreach (var assetName in Assets.Keys)
+            {
+                var asset = GetAsset(assetName, branch);
+                if (asset is T t)
+                    result.Add(t);
+            }
+
+            return result;
+        }
+        
         public Object GetAsset(string assetName, string branch, out bool hasBranchAssets, out string outBranch)
         {
             outBranch = null;

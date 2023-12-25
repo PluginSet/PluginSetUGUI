@@ -47,6 +47,8 @@ namespace PluginSet.UGUI
         [SerializeField]
         private Canvas canvas;
         public RectTransform RectTransform { get; private set; }
+        
+        public bool SomeModalShown => _modalLayer != null && _modalLayer.gameObject.activeSelf;
 
         private RectTransform _modalLayer;
 
@@ -72,8 +74,8 @@ namespace PluginSet.UGUI
 
         internal bool AdjustModalLayer()
         {
-            var findModal = false;
             var maxSiblingIndex = int.MinValue;
+            UIWindowBase topWindow = null;
             foreach (var win in RectTransform.GetComponentsInChildren<UIWindowBase>())
             {
                 if (!win.IsShown)
@@ -81,33 +83,37 @@ namespace PluginSet.UGUI
                 
                 if (!win.IsModal)
                     continue;
-                
-                maxSiblingIndex = Mathf.Max(maxSiblingIndex, win.transform.GetSiblingIndex());
-                findModal = true;
+
+                var siblingIndex = win.transform.GetSiblingIndex();
+                if (siblingIndex > maxSiblingIndex)
+                {
+                    topWindow = win;
+                    maxSiblingIndex = siblingIndex;
+                }
             }
 
-            if (!findModal)
+            if (topWindow == null)
             {
                 HideModalLayer();
                 return false;
             }
             
-            ShowModalLayer(maxSiblingIndex - 1);
+            ShowModalLayer(topWindow);
             return true;
         }
         
-        private void ShowModalLayer(int siblingIndex)
+        private void ShowModalLayer(UIWindowBase topWindow)
         {
             if (_modalLayer == null)
             {
                 _modalLayer = CreateModalLayer();
                 _modalLayer.SetParent(RectTransform, false);
                 _modalLayer.gameObject.AddComponent<MakeFullScreen>();
-                siblingIndex++;
             }
             
             _modalLayer.gameObject.SetActive(true);
-            _modalLayer.SetSiblingIndex(siblingIndex);
+            _modalLayer.SetAsLastSibling();
+            topWindow.transform.SetAsLastSibling();
         }
 
         internal void HideModalLayer()

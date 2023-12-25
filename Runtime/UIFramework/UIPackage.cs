@@ -94,6 +94,18 @@ namespace PluginSet.UGUI
             assetName = url.Substring(pos2 + 1);
             return true;
         }
+        
+        public static T GetAsset<T>(string url) where T : Object
+        {
+            var item = GetPackageItem(url);
+            return item.asset as T;
+        }
+        
+        public static T GetAsset<T>(string url, string branchName) where T : Object
+        {
+            var item = GetPackageItem(url, branchName);
+            return item.asset as T;
+        }
 
         public static PackageItem GetPackageItem(string url)
         {
@@ -184,6 +196,36 @@ namespace PluginSet.UGUI
             };
             _packageItems.Add(key, item);
             return item;
+        }
+        
+        public T[] GetAllAssets<T>(string branchName = null) where T: Object
+        {
+            if (Assets == null)
+                return null;
+
+            if (string.IsNullOrEmpty(branchName))
+                branchName = branch;
+            return Assets.GetAllAssets<T>(branchName).ToArray();
+        }
+        
+        public T[] GetAllComponents<T>(string branchName = null) where T: Component
+        {
+            if (Assets == null)
+                return null;
+
+            if (string.IsNullOrEmpty(branchName))
+                branchName = branch;
+            
+            var prefabs = Assets.GetAllAssets<GameObject>(branchName);
+            var result = new List<T>();
+            foreach (var prefab in prefabs)
+            {
+                var component = prefab.GetComponent<T>();
+                if (component != null)
+                    result.Add(component);
+            }
+
+            return result.ToArray();
         }
         
         public void Reload(PackageAssets assets)

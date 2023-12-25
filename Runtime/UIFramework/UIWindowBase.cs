@@ -113,6 +113,8 @@ namespace PluginSet.UGUI
                 IsShown = false;
                 BeforeHide();
             }
+            if (IsModal)
+                UIManager.AdjustModalLayer();
             OnHide();
         }
 
@@ -284,8 +286,6 @@ namespace PluginSet.UGUI
 
         protected virtual void OnHide()
         {
-            if (IsModal)
-                UIManager.AdjustModalLayer();
         }
 
         public void ShowOn(UILayer layer)

@@ -51,9 +51,12 @@ namespace PluginSet.UGUI
             Owner = null;
         }
 
-        protected void HideWindow()
+        public void HideWindow()
         {
-            Owner.Hide();
+            if (Owner != null)
+                Owner.Hide();
+            else
+                gameObject.SetActive(false);
         }
 
         protected virtual void InitMembers()

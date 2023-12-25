@@ -42,17 +42,21 @@ namespace PluginSet.UGUI
                 list.Remove(window);
             }
         }
+        
+        public string InstanceName { get; internal set; }
 
         private object[] _args;
 
         protected override void Awake()
         {
-            AddInstance(name, this);
+            if (string.IsNullOrEmpty(InstanceName))
+                InstanceName = $"{name}_{GetType().FullName}";
+            AddInstance(InstanceName, this);
         }
 
         protected override void OnDestroy()
         {
-            RemoveInstance(name, this);
+            RemoveInstance(InstanceName, this);
             base.OnDestroy();
         }
 
@@ -82,7 +86,7 @@ namespace PluginSet.UGUI
         protected override void BeforeHide()
         {
             if (DestroyOnHide)
-                RemoveInstance(name, this);
+                RemoveInstance(InstanceName, this);
             
             base.BeforeHide();
         }

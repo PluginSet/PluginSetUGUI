@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using PluginSet.Core;
-using UnityEngine;
 
 namespace PluginSet.UGUI
 {
@@ -11,12 +10,12 @@ namespace PluginSet.UGUI
 
         protected virtual string GetBundleName(string packageName)
         {
-            return $"{packageName}";
+            return $"{packageName}".ToLower();
         }
 
         protected virtual string GetBundleName(string packageName, string branch)
         {
-            return $"{GetBundleName(packageName)}_{branch}";
+            return $"{GetBundleName(packageName)}_{branch}".ToLower();
         }
 
         protected virtual string GetBranchBundleName(string packageName, string branch)
