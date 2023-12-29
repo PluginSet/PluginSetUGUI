@@ -47,7 +47,7 @@ namespace PluginSet.UGUI
         {
             if (WindowInfos.TryGetValue(name, out tempWindowInfos))
             {
-                info = tempWindowInfos[^1];
+                info = tempWindowInfos[tempWindowInfos.Count - 1];
                 return true;
             }
 
