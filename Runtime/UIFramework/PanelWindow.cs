@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace PluginSet.UGUI
 {
-    public class PanelWindowBase: UIWindow<IProxy>
+    public class PanelWindowBase: UIWindow
     {
         public virtual PanelBehavior PanelBehavior { get; protected set; }
         protected override bool DestroyOnHide => true;
@@ -21,16 +21,16 @@ namespace PluginSet.UGUI
             }
         }
 
+        protected override void SetData(params object[] args)
+        {
+            if (PanelBehavior != null)
+                PanelBehavior.SetData(args);
+        }
+
         protected override void SetData()
         {
             if (PanelBehavior != null)
                 PanelBehavior.SetData();
-        }
-
-        protected override void SetData(IProxy data)
-        {
-            if (PanelBehavior != null)
-                PanelBehavior.SetData(data);
         }
 
         protected override void BeforeShow()
@@ -80,17 +80,6 @@ namespace PluginSet.UGUI
             
             protected set => Behavior = (T)value;
         }
-    }
-    
-    public abstract class PanelWindow<T>: PanelWindowBase where T : IProxy
-    {
-        protected override void SetData(IProxy data)
-        {
-            if (data is T t)
-                SetData(t);
-        }
-
-        protected abstract void SetData(T data);
     }
 
     public sealed class PanelWindow : PanelWindowBase

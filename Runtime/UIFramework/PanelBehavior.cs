@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace PluginSet.UGUI
@@ -69,13 +68,14 @@ namespace PluginSet.UGUI
             
         }
 
-        public virtual void SetData()
+        public virtual void SetData(params object[] data)
         {
             
         }
 
-        public virtual void SetData(IProxy data)
+        public virtual void SetData()
         {
+            
         }
         
         public virtual void BeforeShow()
@@ -101,11 +101,23 @@ namespace PluginSet.UGUI
     
     public abstract class PanelBehavior<T>: PanelBehavior
     {
-        public override void SetData(IProxy data)
+        public override void SetData(params object[] data)
         {
-            SetData((T)data);
+            if (data.Length == 1 && data[0] is T d)
+                SetData(d);
         }
 
         protected abstract void SetData(T data);
+    }
+    
+    public abstract class PanelBehavior<T1, T2>: PanelBehavior
+    {
+        public override void SetData(params object[] data)
+        {
+            if (data.Length == 2 && data[0] is T1 d1 && data[1] is T2 d2)
+                SetData(d1, d2);
+        }
+
+        protected abstract void SetData(T1 arg1, T2 arg2);
     }
 }

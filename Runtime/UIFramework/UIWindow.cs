@@ -70,17 +70,30 @@ namespace PluginSet.UGUI
         {
             _args = args;
             if (Panel != null && enabled)
-                SetData(_args);
+                SetDataInternal();
         }
         
         protected virtual void SetData(params object[] args)
         {
             
         }
+        
+        protected virtual void SetData()
+        {
+            
+        }
+
+        private void SetDataInternal()
+        {
+            if (_args == null || _args.Length == 0)
+                SetData();
+            else
+                SetData(_args);
+        }
 
         protected override void BeforeShow()
         {
-            SetData(_args);
+            SetDataInternal();
         }
 
         protected override void BeforeHide()
@@ -92,23 +105,12 @@ namespace PluginSet.UGUI
         }
     }
 
-    public interface IProxy
-    {
-    }
-
-    public class UIWindow<T> : UIWindow where T : IProxy
+    public class UIWindow<T> : UIWindow
     {
         protected override void SetData(params object[] args)
         {
-            if (args != null && args.Length == 1 && args[0] is T data)
+            if (args.Length == 1 && args[0] is T data)
                 SetData(data);
-            else
-                SetData();
-        }
-        
-        protected virtual void SetData()
-        {
-            
         }
 
         protected virtual void SetData(T data)
